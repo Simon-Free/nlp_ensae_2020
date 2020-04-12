@@ -1,8 +1,8 @@
 DATA_DIR = "./data/"
 OUTPUT_DIR = './outputs/'
 LOG_DIR = "./logs/"
-SAVES_DIR = "./saves/"
 CACHE_DIR = "./cache/"
+
 WEIGHTS_NAME = "pytorch_model.bin"
 CONFIG_NAME = "config.json"
 
