@@ -12,13 +12,16 @@ csv.field_size_limit(2147483647) # Increase CSV reader's field limit incase we h
 
 class InputExample(object):
     """A single training/test example for simple sequence classification."""
-
-    def __init__(self, guid, text_a, text_b=None, label=None):
+    unique_id = 0
+    def __init__(self, guid, text_a, text_b=None, label=None, keyword=None):
         """Constructs a InputExample.
 """
         self.guid = guid
         self.text_a = text_a
         self.label = label
+        self.unique_id = InputExample.unique_id
+        self.keyword = keyword
+        InputExample.unique_id += 1 
 
 
 class DataProcessor(object):
@@ -48,7 +51,9 @@ class BinaryClassificationProcessor(DataProcessor):
         """See base class."""
         return self._create_examples(
             self._read_tsv(os.path.join(data_dir, "dev.tsv")), "dev")
-
+    def get_full_examples(self, data_dir):
+        return self._create_examples(
+            self._read_tsv(os.path.join(data_dir, "full.tsv")), "full")
     def get_labels(self):
         """See base class."""
         return ["0", "1"]
@@ -62,17 +67,22 @@ class BinaryClassificationProcessor(DataProcessor):
             text_a = line[3]
             label = line[1]
             examples.append(
-                InputExample(guid=guid, text_a=text_a, label=label))
+                InputExample(guid=guid, text_a=text_a, label=label, keyword= line[-1]))
         return examples
         
 class InputFeatures(object):
     """A single set of features of data."""
+    unique_id = 0
 
-    def __init__(self, input_ids, input_mask, segment_ids, label_id):
+    def __init__(self, input_ids, input_mask, segment_ids, label_id, example = None ):
         self.input_ids = input_ids
         self.input_mask = input_mask
         self.segment_ids = segment_ids
         self.label_id = label_id
+        self.example = example
+        self.unique_id = InputFeatures.unique_id
+        InputFeatures.unique_id += 1 
+
 
 
 def convert_example_to_feature(example_row):
@@ -111,5 +121,5 @@ def convert_example_to_feature(example_row):
     return InputFeatures(input_ids=input_ids,
                          input_mask=input_mask,
                          segment_ids=segment_ids,
-                         label_id=label_id)
+                         label_id=label_id, example = example)
 
