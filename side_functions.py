@@ -4,6 +4,7 @@ import pandas as pd
 import lightgbm as lgb
 import matplotlib.pyplot as plt
 import seaborn as sn
+import seaborn as sns
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import precision_score # tp      / ( tp + fp )
 from sklearn.metrics import accuracy_score # tp + tn / ( tp + fp + tn + fn  )
@@ -21,8 +22,7 @@ from gensim.models.phrases import Phrases, Phraser
 from gensim.models import Word2Vec
 from multiprocessing import cpu_count
 from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
-
-
+from sklearn.manifold import TSNE
 pyLDAvis.enable_notebook()
 
 
@@ -237,3 +237,31 @@ def show_eval(y_true, y_pred):
         plt.title('Receiver operating characteristic for '+label)
         plt.legend(loc="lower right")
         plt.show()
+
+
+def compute_tsne(train, w2v_model):
+    tsne = TSNE(n_components=3, verbose=1, perplexity=40, n_iter=300)
+    x_train = word2vec_features(train["token_retreated_text"], w2v_model)
+    tsne_results = tsne.fit_transform(x_train)
+    return tsne_results
+
+
+def plot_tsne(train, tsne_results):
+    df_subset = pd.DataFrame()
+    df_subset['tsne-2d-one'] = tsne_results[:, 0]
+    df_subset['tsne-2d-two'] = tsne_results[:, 1]
+    df_subset['label'] = train["to_predict"]
+    df_subset["mask"] = True
+
+    plt.figure(figsize=(16, 10))
+    sns.scatterplot(
+        x="tsne-2d-one", y="tsne-2d-two",
+        hue="label",
+#        palette=sns.color_palette("hls", 2),  # len(set(all_keywords))),
+        data=df_subset,
+        legend="full",
+        alpha=0.3
+    )
+
+
+
